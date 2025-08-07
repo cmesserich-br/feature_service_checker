@@ -58,7 +58,9 @@ function displaySampleTable(features) {
     const row = document.createElement('tr');
     headers.forEach((header) => {
       const td = document.createElement('td');
-      td.textContent = feature.attributes[header];
+      const cellValue = feature.attributes[header];
+      td.textContent = cellValue;
+      td.title = cellValue ?? '';  // Show full text on hover
       row.appendChild(td);
     });
     tbody.appendChild(row);
