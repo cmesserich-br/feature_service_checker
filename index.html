@@ -4,23 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Feature Service Inspector</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
   <div class="container">
     <h1>🔍 Feature Service Inspector</h1>
     <p>Paste a public ArcGIS Feature Service URL (e.g., https://.../FeatureServer)</p>
-    <input type="text" id="urlInput" placeholder="https://.../FeatureServer" />
-    <button id="inspectBtn">Inspect</button>
 
-    <div id="layerSelectorContainer" style="display: none; margin-top: 1em;">
+    <!-- Search bar and Inspect button inline -->
+    <div class="search-group">
+      <input type="text" id="serviceUrl" placeholder="Please enter your service link (e.g. https://services9.arcgis.com/.../FeatureServer)" />
+      <button id="inspectBtn" class="btn">Inspect</button>
+    </div>
+
+    <!-- Layer dropdown -->
+    <div class="dropdown-group" id="layerSelectorContainer" style="display: none;">
       <label for="layerSelector">Select a Layer:</label>
       <select id="layerSelector"></select>
     </div>
 
-    <div id="layerInfo" style="margin-top: 1.5em;"></div>
-
-    <div id="field-schema" style="margin-top: 1.5em;"></div>
+    <!-- Info output -->
+    <div id="output" class="output-section"></div>
   </div>
 
   <script src="script.js"></script>
