@@ -101,7 +101,7 @@ async function inspectService(url) {
     const layerSelector = document.getElementById('layer-selector');
     layerSelector.innerHTML = '';
 
-    // Case: Single layer service
+    // Case: Single layer service (Feature Layer or Table)
     if (json.type === "Feature Layer" || json.type === "Table") {
       displayLayerInfo(json);
       displayFields(json.fields || []);
@@ -109,28 +109,28 @@ async function inspectService(url) {
     }
     // Case: FeatureServer with multiple layers
     else if (json.layers && json.layers.length > 0) {
-      const select = document.createElement('select');
-      select.id = 'layer-dropdown';
+      const instruction = document.createElement('p');
+      instruction.textContent = 'Select a layer to inspect:';
+      layerSelector.appendChild(instruction);
+
+      const pillContainer = document.createElement('div');
+      pillContainer.className = 'pill-container';
+
       json.layers.forEach((layer) => {
-        const option = document.createElement('option');
-        option.value = `${url}/${layer.id}`;
-        option.textContent = `${layer.name} (ID: ${layer.id})`;
-        select.appendChild(option);
+        const pill = document.createElement('button');
+        pill.className = 'layer-pill';
+        pill.textContent = `${layer.name} (ID: ${layer.id})`;
+        pill.onclick = async () => {
+          const selectedUrl = `${url}/${layer.id}`;
+          const layerJson = await fetchFeatureLayerMetadata(selectedUrl);
+          displayLayerInfo(layerJson);
+          displayFields(layerJson.fields || []);
+          handleSampleViewer(selectedUrl);
+        };
+        pillContainer.appendChild(pill);
       });
 
-      const inspectBtn = document.createElement('button');
-      inspectBtn.textContent = 'Inspect Selected Layer';
-      inspectBtn.className = 'btn';
-      inspectBtn.onclick = async () => {
-        const selectedUrl = select.value;
-        const layerJson = await fetchFeatureLayerMetadata(selectedUrl);
-        displayLayerInfo(layerJson);
-        displayFields(layerJson.fields || []);
-        handleSampleViewer(selectedUrl);
-      };
-
-      layerSelector.appendChild(select);
-      layerSelector.appendChild(inspectBtn);
+      layerSelector.appendChild(pillContainer);
     } else {
       alert('No feature layers found at this URL.');
     }
@@ -139,6 +139,7 @@ async function inspectService(url) {
     alert('Failed to inspect the service. Check the URL and try again.');
   }
 }
+
 
 function displayLayerInfo(json) {
   document.getElementById('layer-name').textContent = json.name || '';
