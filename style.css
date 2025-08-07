@@ -1,4 +1,4 @@
-/* Global Theme: Green Palette */
+/* Color Palette */
 :root {
   --timberwolf: #dad7cd;
   --sage: #a3b18a;
@@ -11,6 +11,7 @@
   --shadow: rgba(0, 0, 0, 0.1);
 }
 
+/* Global Styles */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: var(--timberwolf);
@@ -19,7 +20,7 @@ body {
   padding: 2rem;
 }
 
-/* Centering Container */
+/* Container */
 .container {
   max-width: 900px;
   margin: 0 auto;
@@ -29,7 +30,7 @@ body {
   box-shadow: 0 4px 20px var(--shadow);
 }
 
-/* Section Headers */
+/* Headings */
 h1, h2 {
   color: var(--hunter-green);
   margin-bottom: 0.75rem;
@@ -40,7 +41,7 @@ h2 {
   font-size: 1.4rem;
 }
 
-/* Input Group */
+/* Input Section */
 .input-group {
   display: flex;
   gap: 0.5rem;
@@ -71,7 +72,7 @@ input[type="text"] {
   background-color: var(--hunter-green);
 }
 
-/* Pills */
+/* Layer Pills */
 .layer-pill {
   display: inline-block;
   margin: 0.25rem;
@@ -89,7 +90,7 @@ input[type="text"] {
   color: white;
 }
 
-/* Section Block with Button */
+/* Header/Toggle Section */
 .header-with-button {
   display: flex;
   justify-content: space-between;
@@ -102,27 +103,26 @@ input[type="text"] {
   margin-bottom: 1.5rem;
 }
 
-/* Scrollable Table Wrapper */
+/* Table Wrapper */
 .table-wrapper {
-  width: 100%;
   overflow-x: auto;
+  width: 100%;
+  margin-top: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 6px;
-  margin-top: 1rem;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Table Styles */
+/* Info Table */
 .info-table {
-  width: max-content;
-  min-width: 100%;
+  width: 100%;
+  min-width: 900px; /* force scroll if smaller screen */
   border-collapse: collapse;
   font-size: 0.95rem;
   table-layout: auto;
 }
 
-.info-table th,
-.info-table td {
+.info-table th, .info-table td {
   padding: 0.6rem 1rem;
   text-align: left;
   border-bottom: 1px solid #ccc;
@@ -134,30 +134,6 @@ input[type="text"] {
   font-weight: bold;
 }
 
-.info-table tr:nth-child(even) {
+.info-table tbody tr:nth-child(even) {
   background-color: #f4f4f4;
-}
-
-/* Truncate long content and show tooltip */
-.info-table td {
-  max-width: 250px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  position: relative;
-}
-
-.info-table td:hover::after {
-  content: attr(title);
-  position: absolute;
-  background: #333;
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  top: 100%;
-  left: 0;
-  white-space: normal;
-  z-index: 999;
-  max-width: 300px;
 }
