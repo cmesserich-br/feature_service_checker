@@ -92,12 +92,14 @@ input[type="text"] {
 /* Tables */
 .info-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   margin-top: 1rem;
   font-size: 0.95rem;
 }
 
-.info-table th, .info-table td {
+.info-table th,
+.info-table td {
   padding: 0.6rem 1rem;
   text-align: left;
   border-bottom: 1px solid #ccc;
@@ -108,39 +110,14 @@ input[type="text"] {
   font-weight: bold;
 }
 
-.info-table tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-.table-wrapper {
-  overflow-x: auto;
-  max-width: 100%;
-  margin-top: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-}
-
-/* Section Block with Button */
-.header-with-button {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 2rem;
-}
-
-#layer-selector {
-  margin-top: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-/* Zebra striping for all data tables */
+/* Zebra striping */
 .info-table tbody tr:nth-child(even) {
   background-color: #f4f4f4;
 }
 
-/* Truncate long cell content with ellipsis and tooltip */
+/* Truncate long values with ellipsis and tooltip */
 .info-table td {
-  max-width: 200px; /* or adjust to your liking */
+  max-width: 200px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -162,13 +139,32 @@ input[type="text"] {
   z-index: 999;
 }
 
-/* Set the actual title attribute from JS so tooltip works */
 .info-table td[title]:hover::after {
   display: block;
 }
 
-/* Make table container scrollable on smaller screens */
+/* Table wrapper */
 .table-wrapper {
+  display: block;
   overflow-x: auto;
+  overflow-y: hidden;
   width: 100%;
+  max-width: 100%;
+  margin-top: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Section Block with Button */
+.header-with-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+#layer-selector {
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
 }
