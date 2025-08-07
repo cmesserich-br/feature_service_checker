@@ -1,90 +1,76 @@
+document.getElementById("inspectBtn").addEventListener("click", () => {
+  const url = document.getElementById("serviceUrl").value.trim();
+  if (!url.endsWith("FeatureServer")) {
+    alert("Please enter a FeatureService URL ending in /FeatureServer");
+    return;
+  }
 
-document.getElementById("inspectBtn").addEventListener("click", async () => {
-    const urlInput = document.getElementById("layerUrl").value.trim();
-    const baseUrl = urlInput.split("/FeatureServer")[0] + "/FeatureServer";
-    const infoSection = document.getElementById("infoSection");
-    const layerInfoSection = document.getElementById("layerInfo");
-    const layerSelect = document.getElementById("layerSelect");
+  fetch(`${url}?f=json`)
+    .then((res) => res.json())
+    .then((data) => {
+      const layers = data.layers || [];
+      const selector = document.getElementById("layerSelector");
+      const container = document.getElementById("layerSelectorContainer");
+      selector.innerHTML = "";
 
-    infoSection.style.display = "none";
-    layerSelect.innerHTML = "";
-    layerSelect.style.display = "none";
-    layerInfoSection.innerHTML = "<p>Loading...</p>";
+      if (layers.length === 0) {
+        container.style.display = "none";
+        inspectLayer(url); // try entire URL
+        return;
+      }
 
-    try {
-        const serviceResponse = await fetch(`${baseUrl}?f=json`);
-        const serviceData = await serviceResponse.json();
+      layers.forEach((layer) => {
+        const option = document.createElement("option");
+        option.value = `${url}/${layer.id}`;
+        option.textContent = `${layer.name} (ID: ${layer.id})`;
+        selector.appendChild(option);
+      });
 
-        if (serviceData?.layers?.length > 0) {
-            layerSelect.style.display = "block";
-            serviceData.layers.forEach(layer => {
-                const option = document.createElement("option");
-                option.value = layer.id;
-                option.textContent = `${layer.name} (ID: ${layer.id})`;
-                layerSelect.appendChild(option);
-            });
-
-            layerSelect.addEventListener("change", () => {
-                const selectedId = layerSelect.value;
-                if (selectedId !== "") {
-                    fetchLayerInfo(`${baseUrl}/${selectedId}`);
-                }
-            });
-
-            // Auto-load the first layer
-            fetchLayerInfo(`${baseUrl}/${serviceData.layers[0].id}`);
-        } else {
-            fetchLayerInfo(urlInput);
-        }
-    } catch (error) {
-        layerInfoSection.innerHTML = `<p class="error">Failed to fetch layer info.</p>`;
-        console.error(error);
-    }
-
-    infoSection.style.display = "block";
+      container.style.display = "block";
+      selector.addEventListener("change", () => inspectLayer(selector.value));
+      inspectLayer(`${url}/${layers[0].id}`); // auto-load first layer
+    })
+    .catch((err) => {
+      alert("Error fetching service info.");
+      console.error(err);
+    });
 });
 
-async function fetchLayerInfo(layerUrl) {
-    const layerInfoSection = document.getElementById("layerInfo");
-    const schemaTable = document.getElementById("schemaTable");
+function inspectLayer(layerUrl) {
+  fetch(`${layerUrl}?f=json`)
+    .then((res) => res.json())
+    .then((layer) => {
+      document.getElementById("infoSection").style.display = "block";
+      document.getElementById("layerName").textContent = layer.name || "—";
+      document.getElementById("layerDescription").textContent = layer.description || "—";
+      document.getElementById("layerOwner").textContent = layer.copyrightText || "—";
 
-    layerInfoSection.innerHTML = "<p>Loading layer data...</p>";
-    schemaTable.innerHTML = "";
+      const lastEdit = layer.editingInfo?.lastEditDate || layer.lastEditDate;
+      document.getElementById("lastModified").textContent = lastEdit
+        ? new Date(lastEdit).toLocaleString()
+        : "—";
 
-    try {
-        const layerResponse = await fetch(`${layerUrl}?f=json`);
-        const layerData = await layerResponse.json();
+      document.getElementById("featureCount").textContent =
+        layer.estimatedFeatureCount ?? layer.maxRecordCount ?? "—";
 
-        const {
-            name, description, owner, editingInfo,
-            lastEditDate, type, geometryType,
-            fields, drawingInfo, displayField,
-            capabilities, supportsPagination,
-            maxRecordCount
-        } = layerData;
+      document.getElementById("geometryType").textContent =
+        layer.geometryType || "—";
 
-        layerInfoSection.innerHTML = `
-            <h3>Layer Info</h3>
-            <p><strong>Name:</strong> ${name || "—"}</p>
-            <p><strong>Description:</strong> ${description || "—"}</p>
-            <p><strong>Owner:</strong> ${owner || "—"}</p>
-            <p><strong>Last Modified:</strong> ${lastEditDate ? new Date(lastEditDate).toLocaleString() : "—"}</p>
-            <p><strong>Feature Count:</strong> ${layerData.estimatedFeatureCount || "—"}</p>
-            <p><strong>Geometry Type:</strong> ${geometryType || "—"}</p>
+      // Schema
+      const tableBody = document.querySelector("#schemaTable tbody");
+      tableBody.innerHTML = "";
+      (layer.fields || []).forEach((field) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${field.name}</td>
+          <td>${field.alias}</td>
+          <td>${field.type}</td>
         `;
-
-        schemaTable.innerHTML = `
-            <tr><th>Field</th><th>Alias</th><th>Type</th></tr>
-            ${fields.map(field => `
-                <tr>
-                    <td>${field.name}</td>
-                    <td>${field.alias}</td>
-                    <td>${field.type}</td>
-                </tr>
-            `).join("")}
-        `;
-    } catch (error) {
-        layerInfoSection.innerHTML = `<p class="error">Failed to fetch sublayer info.</p>`;
-        console.error(error);
-    }
+        tableBody.appendChild(row);
+      });
+    })
+    .catch((err) => {
+      alert("Error fetching layer info.");
+      console.error(err);
+    });
 }
