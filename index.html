@@ -3,28 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Feature Service Inspector</title>
-  <link rel="stylesheet" href="style.css"/>
+  <title>Feature Layer Inspector</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>🔍 Feature Service Inspector</h1>
-    <p>Paste a public ArcGIS Feature Service URL (e.g., https://.../FeatureServer)</p>
-
-    <!-- Search bar and Inspect button inline -->
-    <div class="search-group">
-      <input type="text" id="serviceUrl" placeholder="Please enter your service link (e.g. https://services9.arcgis.com/.../FeatureServer)" />
-      <button id="inspectBtn" class="btn">Inspect</button>
+    <h1>Feature Layer Inspector</h1>
+    
+    <div class="input-group">
+      <input 
+        type="text" 
+        id="service-url" 
+        placeholder="Please enter your service link (e.g. https://services.arcgis.com/.../FeatureServer)" 
+      />
+      <button id="inspect-btn" class="btn">Inspect</button>
     </div>
 
-    <!-- Layer dropdown -->
-    <div class="dropdown-group" id="layerSelectorContainer" style="display: none;">
-      <label for="layerSelector">Select a Layer:</label>
-      <select id="layerSelector"></select>
+    <div id="layer-selector" style="margin: 1rem 0;"></div>
+
+    <div id="layer-info">
+      <h2>Layer Summary</h2>
+      <p><strong>Name:</strong> <span id="layer-name"></span></p>
+      <p><strong>Owner:</strong> <span id="layer-owner"></span></p>
+      <p><strong>Last Modified:</strong> <span id="layer-updated"></span></p>
+      <p><strong>Description:</strong> <span id="layer-description"></span></p>
     </div>
 
-    <!-- Info output -->
-    <div id="output" class="output-section"></div>
+    <div id="fields-info">
+      <div class="header-with-button">
+        <h2>Field Schema</h2>
+        <button id="download-schema" class="btn">Download Schema CSV</button>
+      </div>
+      <table id="fields-table" class="info-table"></table>
+    </div>
+
+    <div id="sample-section">
+      <!-- Sample records viewer + download button will appear here -->
+    </div>
   </div>
 
   <script src="script.js"></script>
