@@ -14,51 +14,71 @@ async function fetchSampleFeatures(url, outFields = ['*'], maxSamples = 10) {
 }
 
 function displaySampleTable(features) {
-  const table = document.getElementById('sample-table');
-  table.innerHTML = '';
+  const sampleContainer = document.getElementById('sample-section');
+  sampleContainer.innerHTML = '';
+
+  const header = document.createElement('div');
+  header.className = 'header-with-button';
+  const title = document.createElement('h2');
+  title.textContent = 'Sample Records';
+  const downloadBtn = document.createElement('button');
+  downloadBtn.className = 'btn';
+  downloadBtn.textContent = 'Download Records CSV';
+  downloadBtn.onclick = () => downloadCSV(features);
+  header.appendChild(title);
+  header.appendChild(downloadBtn);
+  sampleContainer.appendChild(header);
 
   if (!features.length) {
-    table.innerHTML = '<tr><td>No sample records found.</td></tr>';
+    const message = document.createElement('p');
+    message.textContent = 'No sample records found.';
+    sampleContainer.appendChild(message);
     return;
   }
 
-  const headers = Object.keys(features[0].attributes);
+  const tableContainer = document.createElement('div');
+  tableContainer.className = 'scrollable-table';
+
+  const table = document.createElement('table');
+  table.className = 'info-table';
 
   const thead = document.createElement('thead');
+  const headers = Object.keys(features[0].attributes);
   const headerRow = document.createElement('tr');
-  headers.forEach(header => {
+  headers.forEach((header) => {
     const th = document.createElement('th');
     th.textContent = header;
     headerRow.appendChild(th);
   });
   thead.appendChild(headerRow);
+  table.appendChild(thead);
 
   const tbody = document.createElement('tbody');
-  features.forEach(feature => {
+  features.forEach((feature) => {
     const row = document.createElement('tr');
-    headers.forEach(header => {
+    headers.forEach((header) => {
       const td = document.createElement('td');
       td.textContent = feature.attributes[header];
       row.appendChild(td);
     });
     tbody.appendChild(row);
   });
-
-  table.appendChild(thead);
   table.appendChild(tbody);
+  tableContainer.appendChild(table);
+  sampleContainer.appendChild(tableContainer);
 }
 
-function downloadCSV(features, filename = 'sample_records.csv') {
+function downloadCSV(features) {
   if (!features.length) return;
   const headers = Object.keys(features[0].attributes);
-  const rows = features.map(f => headers.map(h => JSON.stringify(f.attributes[h] || '')).join(','));
+  const rows = features.map((f) => headers.map((h) => JSON.stringify(f.attributes[h] || '')).join(','));
   const csvContent = [headers.join(','), ...rows].join('\n');
   const blob = new Blob([csvContent], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
 
   const link = document.createElement('a');
   link.href = url;
-  link.download = filename;
+  link.download = 'sample_records.csv';
   link.click();
   URL.revokeObjectURL(url);
 }
@@ -70,70 +90,117 @@ async function handleSampleViewer(layerUrl) {
     displaySampleTable(samples);
   } catch (error) {
     console.error('Sample Viewer Error:', error);
-    document.getElementById('sample-table').innerHTML = '<tr><td>Unable to load sample records.</td></tr>';
+    const sampleContainer = document.getElementById('sample-section');
+    sampleContainer.textContent = 'Unable to load sample records.';
   }
 }
 
-// EVENT LISTENERS
-document.getElementById('inspect-btn').addEventListener('click', async () => {
-  const baseUrl = document.getElementById('service-url').value.trim();
-  if (!baseUrl) return alert('Please enter a valid service URL.');
-
+async function inspectService(url) {
   try {
-    const metadata = await fetchFeatureLayerMetadata(baseUrl);
+    const json = await fetchFeatureLayerMetadata(url);
+    const layerSelector = document.getElementById('layer-selector');
+    layerSelector.innerHTML = '';
 
-    document.getElementById('layer-name').textContent = metadata.name || '';
-    document.getElementById('layer-owner').textContent = metadata.owner || '';
-    document.getElementById('layer-updated').textContent = new Date(metadata.modified).toLocaleString() || '';
-    document.getElementById('layer-description').textContent = metadata.description || '';
-
-    // Field schema table
-    const schemaTable = document.getElementById('fields-table');
-    schemaTable.innerHTML = '';
-    const fieldHeaderRow = document.createElement('tr');
-    ['Field', 'Alias', 'Type'].forEach(h => {
-      const th = document.createElement('th');
-      th.textContent = h;
-      fieldHeaderRow.appendChild(th);
-    });
-    schemaTable.appendChild(fieldHeaderRow);
-
-    metadata.fields.forEach(field => {
-      const row = document.createElement('tr');
-      ['name', 'alias', 'type'].forEach(key => {
-        const td = document.createElement('td');
-        td.textContent = field[key];
-        row.appendChild(td);
+    // Case: Single layer service
+    if (json.type === "Feature Layer" || json.type === "Table") {
+      displayLayerInfo(json);
+      displayFields(json.fields || []);
+      handleSampleViewer(url);
+    }
+    // Case: FeatureServer with multiple layers
+    else if (json.layers && json.layers.length > 0) {
+      const select = document.createElement('select');
+      select.id = 'layer-dropdown';
+      json.layers.forEach((layer) => {
+        const option = document.createElement('option');
+        option.value = `${url}/${layer.id}`;
+        option.textContent = `${layer.name} (ID: ${layer.id})`;
+        select.appendChild(option);
       });
-      schemaTable.appendChild(row);
-    });
 
-    // Load sample viewer
-    await handleSampleViewer(baseUrl);
+      const inspectBtn = document.createElement('button');
+      inspectBtn.textContent = 'Inspect Selected Layer';
+      inspectBtn.className = 'btn';
+      inspectBtn.onclick = async () => {
+        const selectedUrl = select.value;
+        const layerJson = await fetchFeatureLayerMetadata(selectedUrl);
+        displayLayerInfo(layerJson);
+        displayFields(layerJson.fields || []);
+        handleSampleViewer(selectedUrl);
+      };
 
-  } catch (err) {
-    console.error('Inspect Error:', err);
+      layerSelector.appendChild(select);
+      layerSelector.appendChild(inspectBtn);
+    } else {
+      alert('No feature layers found at this URL.');
+    }
+  } catch (error) {
+    console.error('Inspection Error:', error);
     alert('Failed to inspect the service. Check the URL and try again.');
   }
+}
+
+function displayLayerInfo(json) {
+  document.getElementById('layer-name').textContent = json.name || '';
+  document.getElementById('layer-owner').textContent = json.owner || '';
+  document.getElementById('layer-updated').textContent = json.modified ? new Date(json.modified).toLocaleString() : '';
+  document.getElementById('layer-description').textContent = json.description || '';
+}
+
+function displayFields(fields) {
+  const table = document.getElementById('fields-table');
+  table.innerHTML = '';
+  const thead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  ['Field', 'Alias', 'Type'].forEach(header => {
+    const th = document.createElement('th');
+    th.textContent = header;
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  fields.forEach(field => {
+    const row = document.createElement('tr');
+    const fieldName = document.createElement('td');
+    fieldName.textContent = field.name;
+    const fieldAlias = document.createElement('td');
+    fieldAlias.textContent = field.alias || field.name;
+    const fieldType = document.createElement('td');
+    fieldType.textContent = field.type;
+    row.appendChild(fieldName);
+    row.appendChild(fieldAlias);
+    row.appendChild(fieldType);
+    tbody.appendChild(row);
+  });
+  table.appendChild(tbody);
+}
+
+document.getElementById('inspect-btn').addEventListener('click', () => {
+  const url = document.getElementById('service-url').value.trim();
+  if (!url) {
+    alert('Please enter a valid service URL.');
+    return;
+  }
+  inspectService(url);
 });
 
-// DOWNLOAD BUTTONS
 document.getElementById('download-schema').addEventListener('click', () => {
-  const schemaTable = document.getElementById('fields-table');
-  const rows = Array.from(schemaTable.querySelectorAll('tr'));
-  const csv = rows.map(row => 
-    Array.from(row.children).map(cell => `"${cell.textContent}"`).join(',')
-  ).join('\n');
+  const table = document.getElementById('fields-table');
+  let csv = '';
+  const rows = Array.from(table.querySelectorAll('tr'));
+  rows.forEach(row => {
+    const cols = Array.from(row.querySelectorAll('th, td')).map(td => `"${td.textContent}"`);
+    csv += cols.join(',') + '\n';
+  });
 
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'field_schema.csv';
-  a.click();
-  URL.revokeObjectURL(url);
-});
 
-document.getElementById('download-sample').addEventListener('click', () => {
-  downloadCSV(sampleFeatures);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'schema.csv';
+  link.click();
+  URL.revokeObjectURL(url);
 });
