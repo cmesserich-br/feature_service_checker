@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ArcGIS Feature Layer Inspector</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Feature Layer Inspector</h1>
+    <input type="text" id="urlInput" placeholder="Paste ArcGIS Feature Layer URL">
+    <button onclick="loadLayer()">Inspect Layer</button>
+
+    <div id="output" class="hidden">
+      <section>
+        <h2>Basic Info</h2>
+        <div id="basicInfo"></div>
+      </section>
+      <section>
+        <h2>Schema</h2>
+        <div id="schema"></div>
+      </section>
+      <section>
+        <h2>Sample Records</h2>
+        <div id="records"></div>
+      </section>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
