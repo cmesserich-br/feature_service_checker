@@ -60,5 +60,5 @@ Try these to test the app:
 
 ## 🧑‍💻 Author
 
-Built by [Your Name] as part of an internal tools initiative and coding skill development.  
+Built by CM as part of an internal tools initiative and coding skill development.  
 Feedback and ideas welcome!
