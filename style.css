@@ -132,3 +132,43 @@ input[type="text"] {
   margin-top: 1rem;
   margin-bottom: 1.5rem;
 }
+
+/* Zebra striping for all data tables */
+.info-table tbody tr:nth-child(even) {
+  background-color: #f4f4f4;
+}
+
+/* Truncate long cell content with ellipsis and tooltip */
+.info-table td {
+  max-width: 200px; /* or adjust to your liking */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+}
+
+.info-table td:hover::after {
+  content: attr(title);
+  position: absolute;
+  background: #333;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  top: 100%;
+  left: 0;
+  white-space: normal;
+  max-width: 300px;
+  z-index: 999;
+}
+
+/* Set the actual title attribute from JS so tooltip works */
+.info-table td[title]:hover::after {
+  display: block;
+}
+
+/* Make table container scrollable on smaller screens */
+.table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
