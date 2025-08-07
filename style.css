@@ -1,71 +1,86 @@
-
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: Arial, sans-serif;
+  background-color: #f8f8fc;
+  padding: 2rem;
   margin: 0;
-  background: #f7f7fa;
-  color: #333;
 }
 
 .container {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 2rem;
+  max-width: 720px;
+  margin: 0 auto;
   background: white;
+  padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+h1 {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+.search-group {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 input[type="text"] {
-  width: 100%;
-  padding: 0.75rem;
+  flex: 1;
+  padding: 0.5rem;
   font-size: 1rem;
-  margin: 1rem 0;
-  border: 1px solid #ccc;
-  border-radius: 6px;
 }
 
-button {
-  background-color: #007aff;
-  color: white;
-  padding: 0.6rem 1.2rem;
+.btn {
+  padding: 0.5rem 1rem;
   font-size: 1rem;
+  background-color: #007bff;
   border: none;
+  color: white;
   border-radius: 6px;
   cursor: pointer;
 }
 
-button:hover {
-  background-color: #005ecb;
+.btn:hover {
+  background-color: #0056b3;
 }
 
-.hidden {
-  display: none;
+#output {
+  margin-top: 2rem;
 }
 
-#schemaTable {
+table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
 }
 
-#schemaTable th, #schemaTable td {
+th, td {
   border: 1px solid #ccc;
   padding: 0.5rem;
   text-align: left;
 }
 
-#sampleRecords {
-  background: #f0f0f5;
-  padding: 1rem;
-  border-radius: 8px;
-  overflow-x: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
+th {
+  background-color: #f0f0f0;
+  font-weight: bold;
 }
 
-#map {
-  height: 400px;
-  margin-top: 1rem;
-  border-radius: 8px;
-  overflow: hidden;
+#downloadSchemaBtn {
+  margin-left: 0.5rem;
+  background-color: #007bff;
+  color: white;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#downloadSchemaBtn:hover {
+  background-color: #0056b3;
 }
