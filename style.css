@@ -103,3 +103,25 @@ input[type="text"] {
   overflow-x: auto;
   width: 100%;
 }
+
+.pill-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.layer-pill {
+  padding: 0.5rem 1rem;
+  background-color: #e9f0fb;
+  border: 1px solid #007bff;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.layer-pill:hover {
+  background-color: #007bff;
+  color: white;
+}
