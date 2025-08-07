@@ -36,7 +36,7 @@ Paste a public-facing ArcGIS REST Feature Service or Feature Layer URL, and the 
 ## 🚀 How to Use
 
 1. Visit the app in your browser:  
-   [https://your-username.github.io/your-repo-name/](https://cmesserich-br.github.io/feature_service_checker/)
+   [https://cmesserich-br.github.io/feature_service_checker/](https://cmesserich-br.github.io/feature_service_checker/)
 
 2. Paste a URL like:  
    `https://services.arcgis.com/.../FeatureServer`  
