@@ -1,76 +1,118 @@
-document.getElementById("inspectBtn").addEventListener("click", () => {
-  const url = document.getElementById("serviceUrl").value.trim();
-  if (!url.endsWith("FeatureServer")) {
-    alert("Please enter a FeatureService URL ending in /FeatureServer");
+document.getElementById("inspectBtn").addEventListener("click", async () => {
+  const serviceUrl = document.getElementById("urlInput").value.trim();
+  if (!serviceUrl.endsWith("FeatureServer")) {
+    alert("Please enter a valid ArcGIS FeatureServer URL.");
     return;
   }
 
-  fetch(`${url}?f=json`)
-    .then((res) => res.json())
-    .then((data) => {
-      const layers = data.layers || [];
-      const selector = document.getElementById("layerSelector");
-      const container = document.getElementById("layerSelectorContainer");
-      selector.innerHTML = "";
+  try {
+    const serviceResponse = await fetch(`${serviceUrl}?f=json`);
+    const serviceData = await serviceResponse.json();
 
-      if (layers.length === 0) {
-        container.style.display = "none";
-        inspectLayer(url); // try entire URL
-        return;
-      }
+    if (!serviceData.layers || serviceData.layers.length === 0) {
+      alert("No layers found in this Feature Service.");
+      return;
+    }
 
-      layers.forEach((layer) => {
-        const option = document.createElement("option");
-        option.value = `${url}/${layer.id}`;
-        option.textContent = `${layer.name} (ID: ${layer.id})`;
-        selector.appendChild(option);
-      });
-
-      container.style.display = "block";
-      selector.addEventListener("change", () => inspectLayer(selector.value));
-      inspectLayer(`${url}/${layers[0].id}`); // auto-load first layer
-    })
-    .catch((err) => {
-      alert("Error fetching service info.");
-      console.error(err);
+    // Populate layer selector
+    const selector = document.getElementById("layerSelector");
+    selector.innerHTML = "";
+    serviceData.layers.forEach(layer => {
+      const option = document.createElement("option");
+      option.value = layer.id;
+      option.textContent = `${layer.name} (ID: ${layer.id})`;
+      selector.appendChild(option);
     });
+
+    document.getElementById("layerSelectorContainer").style.display = "block";
+    selector.onchange = () => fetchLayerDetails(serviceUrl, selector.value);
+    fetchLayerDetails(serviceUrl, selector.value);
+  } catch (error) {
+    alert("Failed to fetch service info.");
+    console.error(error);
+  }
 });
 
-function inspectLayer(layerUrl) {
-  fetch(`${layerUrl}?f=json`)
-    .then((res) => res.json())
-    .then((layer) => {
-      document.getElementById("infoSection").style.display = "block";
-      document.getElementById("layerName").textContent = layer.name || "—";
-      document.getElementById("layerDescription").textContent = layer.description || "—";
-      document.getElementById("layerOwner").textContent = layer.copyrightText || "—";
+async function fetchLayerDetails(baseUrl, layerId) {
+  const layerUrl = `${baseUrl}/${layerId}?f=json`;
+  const response = await fetch(layerUrl);
+  const data = await response.json();
 
-      const lastEdit = layer.editingInfo?.lastEditDate || layer.lastEditDate;
-      document.getElementById("lastModified").textContent = lastEdit
-        ? new Date(lastEdit).toLocaleString()
-        : "—";
+  const info = document.getElementById("layerInfo");
+  info.innerHTML = `
+    <h2>Layer Summary</h2>
+    <p><strong>Name:</strong> ${data.name || "—"}</p>
+    <p><strong>Description:</strong> ${data.description || "—"}</p>
+    <p><strong>Owner:</strong> ${data.copyrightText || "—"}</p>
+    <p><strong>Last Modified:</strong> ${data.editingInfo?.lastEditDate ? new Date(data.editingInfo.lastEditDate).toLocaleString() : "—"}</p>
+    <p><strong>Feature Count:</strong> ${data.maxRecordCount || "—"}</p>
+    <p><strong>Geometry Type:</strong> ${data.geometryType || "—"}</p>
+  `;
 
-      document.getElementById("featureCount").textContent =
-        layer.estimatedFeatureCount ?? layer.maxRecordCount ?? "—";
+  renderSchemaTable(data.fields);
+}
 
-      document.getElementById("geometryType").textContent =
-        layer.geometryType || "—";
+function renderSchemaTable(fields) {
+  const container = document.getElementById("field-schema");
+  if (!fields || fields.length === 0) {
+    container.innerHTML = "<p>No field schema found.</p>";
+    return;
+  }
 
-      // Schema
-      const tableBody = document.querySelector("#schemaTable tbody");
-      tableBody.innerHTML = "";
-      (layer.fields || []).forEach((field) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${field.name}</td>
-          <td>${field.alias}</td>
-          <td>${field.type}</td>
-        `;
-        tableBody.appendChild(row);
-      });
-    })
-    .catch((err) => {
-      alert("Error fetching layer info.");
-      console.error(err);
-    });
+  const header = document.createElement("div");
+  header.style.display = "flex";
+  header.style.alignItems = "center";
+  header.style.gap = "10px";
+
+  const heading = document.createElement("h3");
+  heading.textContent = "Field Schema";
+
+  const downloadBtn = document.createElement("button");
+  downloadBtn.id = "downloadSchemaCsvBtn";
+  downloadBtn.textContent = "Download Schema CSV";
+  downloadBtn.style.padding = "4px 8px";
+  downloadBtn.style.fontSize = "14px";
+  downloadBtn.addEventListener("click", downloadSchemaAsCsv);
+
+  header.appendChild(heading);
+  header.appendChild(downloadBtn);
+
+  const table = document.createElement("table");
+  table.innerHTML = `
+    <thead>
+      <tr><th>Field</th><th>Alias</th><th>Type</th></tr>
+    </thead>
+    <tbody>
+      ${fields.map(f =>
+        `<tr>
+          <td>${f.name}</td>
+          <td>${f.alias || f.name}</td>
+          <td>${f.type}</td>
+        </tr>`).join("")}
+    </tbody>
+  `;
+
+  container.innerHTML = "";
+  container.appendChild(header);
+  container.appendChild(table);
+}
+
+function downloadSchemaAsCsv() {
+  const table = document.querySelector("#field-schema table");
+  if (!table) return;
+
+  const rows = Array.from(table.querySelectorAll("tr")).map(row =>
+    Array.from(row.querySelectorAll("th, td")).map(cell => `"${cell.innerText}"`)
+  );
+
+  const csvContent = rows.map(e => e.join(",")).join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.setAttribute("href", url);
+  link.setAttribute("download", "schema.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
