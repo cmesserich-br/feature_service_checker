@@ -10,32 +10,17 @@
   <div class="container">
     <h1>🔍 Feature Service Inspector</h1>
     <p>Paste a public ArcGIS Feature Service URL (e.g., https://.../FeatureServer)</p>
-
-    <input id="serviceUrl" type="text" placeholder="Enter Feature Service URL here..." />
+    <input type="text" id="urlInput" placeholder="https://.../FeatureServer" />
     <button id="inspectBtn">Inspect</button>
 
-    <div id="layerSelectorContainer" style="display:none;">
+    <div id="layerSelectorContainer" style="display: none; margin-top: 1em;">
       <label for="layerSelector">Select a Layer:</label>
       <select id="layerSelector"></select>
     </div>
 
-    <div id="infoSection" style="display: none;">
-      <h2>Layer Summary</h2>
-      <p><strong>Name:</strong> <span id="layerName">—</span></p>
-      <p><strong>Description:</strong> <span id="layerDescription">—</span></p>
-      <p><strong>Owner:</strong> <span id="layerOwner">—</span></p>
-      <p><strong>Last Modified:</strong> <span id="lastModified">—</span></p>
-      <p><strong>Feature Count:</strong> <span id="featureCount">—</span></p>
-      <p><strong>Geometry Type:</strong> <span id="geometryType">—</span></p>
+    <div id="layerInfo" style="margin-top: 1.5em;"></div>
 
-      <h3>Field Schema</h3>
-      <table id="schemaTable">
-        <thead>
-          <tr><th>Field</th><th>Alias</th><th>Type</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+    <div id="field-schema" style="margin-top: 1.5em;"></div>
   </div>
 
   <script src="script.js"></script>
