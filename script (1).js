@@ -1,0 +1,65 @@
+
+function stripHTML(input) {
+  const div = document.createElement("div");
+  div.innerHTML = input;
+  return div.textContent || div.innerText || "";
+}
+
+async function getLayerUrl(baseUrl) {
+  if (/\/FeatureServer\/?$/.test(baseUrl)) {
+    const res = await fetch(baseUrl + '?f=json');
+    const json = await res.json();
+    if (json.layers && json.layers.length > 0) {
+      const firstLayerId = json.layers[0].id;
+      return baseUrl.replace(/\/$/, '') + '/' + firstLayerId;
+    } else {
+      throw new Error("No layers found in FeatureService.");
+    }
+  } else if (/\/FeatureServer\/\d+$/.test(baseUrl)) {
+    return baseUrl;
+  } else {
+    throw new Error("Invalid ArcGIS Feature Service or Layer URL.");
+  }
+}
+
+async function loadLayer() {
+  const url = document.getElementById('urlInput').value.trim();
+  const output = document.getElementById('output');
+  const basicInfoDiv = document.getElementById('basicInfo');
+  const schemaDiv = document.getElementById('schema');
+  const recordsDiv = document.getElementById('records');
+  output.classList.add('hidden');
+
+  try {
+    const layerUrl = await getLayerUrl(url);
+
+    const metadataRes = await fetch(layerUrl + '?f=json');
+    const metadata = await metadataRes.json();
+
+    const countRes = await fetch(layerUrl + '/query?where=1=1&returnCountOnly=true&f=json');
+    const countData = await countRes.json();
+
+    const sampleRes = await fetch(layerUrl + '/query?where=1=1&outFields=*&resultRecordCount=5&f=json');
+    const sampleData = await sampleRes.json();
+
+    const cleanDescription = metadata.description ? stripHTML(metadata.description) : 'N/A';
+
+    basicInfoDiv.innerHTML = `
+      <p><strong>Name:</strong> ${metadata.name}</p>
+      <p><strong>Description:</strong> ${cleanDescription}</p>
+      <p><strong>Feature Count:</strong> ${countData.count}</p>
+      <p><strong>Geometry Type:</strong> ${metadata.geometryType}</p>
+    `;
+
+    schemaDiv.innerHTML = '<table><thead><tr><th>Field</th><th>Alias</th><th>Type</th></tr></thead><tbody>' +
+      metadata.fields.map(f => `<tr><td>${f.name}</td><td>${f.alias}</td><td>${f.type}</td></tr>`).join('') +
+      '</tbody></table>';
+
+    recordsDiv.innerHTML = '<pre>' + JSON.stringify(sampleData.features.map(f => f.attributes), null, 2) + '</pre>';
+
+    output.classList.remove('hidden');
+  } catch (error) {
+    alert('Failed to fetch or parse layer. Check the URL and try again.\n' + error.message);
+    console.error(error);
+  }
+}
