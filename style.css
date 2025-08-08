@@ -20,14 +20,13 @@ body {
   padding: 2rem;
 }
 
-/* Container */
-.container {
-  max-width: 900px;
+/* Layout Container */
+.app-layout {
+  max-width: 100%;
+  width: 100%;
   margin: 0 auto;
-  background-color: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 20px var(--shadow);
+  padding: 1rem 2rem;
+  box-sizing: border-box;
 }
 
 /* Headings */
@@ -41,7 +40,7 @@ h2 {
   font-size: 1.4rem;
 }
 
-/* Input Section */
+/* Input Group */
 .input-group {
   display: flex;
   gap: 0.5rem;
@@ -90,7 +89,7 @@ input[type="text"] {
   color: white;
 }
 
-/* Header/Toggle Section */
+/* Header Section */
 .header-with-button {
   display: flex;
   justify-content: space-between;
@@ -103,37 +102,81 @@ input[type="text"] {
   margin-bottom: 1.5rem;
 }
 
-/* Table Wrapper */
-.table-wrapper {
-  overflow-x: auto;
-  width: 100%;
-  margin-top: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  -webkit-overflow-scrolling: touch;
+/* Scrollable Table Wrapper */
+.scrollable-table {
+  max-height: 400px;
+  overflow: auto;
+  border: 1px solid #ccc;
+  background-color: white;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 6px var(--shadow);
+
+  /* Scrollbar Styling */
+  scrollbar-width: thin;
+  scrollbar-color: var(--sage) #eaeaea;
 }
 
-/* Info Table */
+.scrollable-table::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+
+.scrollable-table::-webkit-scrollbar-track {
+  background: #eaeaea;
+}
+
+.scrollable-table::-webkit-scrollbar-thumb {
+  background-color: var(--sage);
+  border-radius: 10px;
+  border: 2px solid #eaeaea;
+}
+
+.scrollable-table::-webkit-scrollbar-thumb:hover {
+  background-color: var(--fern-green);
+}
+
+/* Tables */
 .info-table {
   width: 100%;
-  min-width: 900px; /* force scroll if smaller screen */
+  min-width: 900px;
   border-collapse: collapse;
   font-size: 0.95rem;
-  table-layout: auto;
 }
 
-.info-table th, .info-table td {
+.info-table th,
+.info-table td {
   padding: 0.6rem 1rem;
   text-align: left;
   border-bottom: 1px solid #ccc;
   white-space: nowrap;
 }
 
-.info-table th {
-  background-color: var(--sage);
-  font-weight: bold;
-}
-
 .info-table tbody tr:nth-child(even) {
   background-color: #f4f4f4;
+}
+
+/* Sticky Header */
+.scrollable-table thead th {
+  position: sticky;
+  top: 0;
+  background-color: var(--sage);
+  z-index: 10;
+  border-bottom: 2px solid #ccc;
+  box-shadow: inset 0 -1px 0 #ccc;
+}
+
+/* Subtitle and Description */
+.subtitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--fern-green);
+  margin-top: -1rem;
+  margin-bottom: 1rem;
+}
+
+.description {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 2rem;
 }
