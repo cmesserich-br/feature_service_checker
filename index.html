@@ -7,41 +7,68 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>Feature Layer Inspector</h1>
-    
-    <div class="input-group">
+  <main class="app-layout">
+    <header>
+      <h1>Feature Layer Inspector</h1>
+      <p class="subtitle">Explore any public ArcGIS Feature Layer in seconds.</p>
+      <p class="description">
+  This tool helps you <strong>quickly inspect</strong> any public-facing 
+  <strong>ArcGIS Feature Service or Layer URL</strong>. Just paste the link above 
+  and click <strong>Inspect</strong> to retrieve and display its key 
+  <strong>metadata</strong>, <strong>field schema</strong>, and 
+  <strong>sample records</strong>. Perfect for 
+  <strong>QA workflows</strong>, <strong>dashboard prep</strong>, or 
+  <strong>exploring unknown services</strong>. You can also download 
+  the <strong>schema</strong> and <strong>sample data</strong> as CSVs 
+  for quick analysis.
+</p>
+
+      
+    </header>
+
+    <section class="input-group">
       <input 
         type="text" 
         id="service-url" 
         placeholder="Please enter your service link (e.g. https://services.arcgis.com/.../FeatureServer)" 
       />
       <button id="inspect-btn" class="btn">Inspect</button>
-    </div>
+    </section>
 
-    <div id="layer-selector" style="margin: 1rem 0;"></div>
+    <section id="layer-selector"></section>
 
-    <div id="layer-info">
+    <section id="layer-info">
       <h2>Layer Summary</h2>
       <p><strong>Name:</strong> <span id="layer-name"></span></p>
       <p><strong>Owner:</strong> <span id="layer-owner"></span></p>
       <p><strong>Last Modified:</strong> <span id="layer-updated"></span></p>
       <p><strong>Description:</strong> <span id="layer-description"></span></p>
-    </div>
+    </section>
 
-    <div id="fields-info">
+    <section id="fields-info">
       <div class="header-with-button">
         <h2>Field Schema</h2>
         <button id="download-schema" class="btn">Download Schema CSV</button>
       </div>
-      <div class="table-wrapper">
+      <div class="scrollable-table">
         <table id="fields-table" class="info-table"></table>
       </div>
-    </div>
+    </section>
 
-    <div id="sample-section"></div> <!-- JS dynamically creates content here -->
-
-  </div>
+    <section id="sample-section"></section>
+    <section id="map-preview-section">
+        <h2>Map Preview</h2>
+        <iframe 
+            id="map-preview"
+            class="map-frame"
+            src=""
+            width="100%"
+            height="500"
+            frameborder="0"
+            style="border: 1px solid #ccc; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"
+        ></iframe>
+        </section>
+  </main>
 
   <script src="script.js"></script>
 </body>
