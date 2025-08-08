@@ -74,6 +74,7 @@ function updateMapPreview(serviceUrl) {
   const mapFrame = document.getElementById('map-preview');
   const viewerUrl = `https://www.arcgis.com/apps/mapviewer/index.html?url=${encodeURIComponent(serviceUrl)}&source=sd`;
   mapFrame.src = viewerUrl;
+  document.getElementById('map-preview-section').style.display = 'block';
 }
 
 function downloadCSV(features) {
@@ -96,29 +97,45 @@ async function handleSampleViewer(layerUrl) {
     const samples = await fetchSampleFeatures(layerUrl);
     sampleFeatures = samples;
     displaySampleTable(samples);
+
+    // ✅ Only show if data exists
+    if (samples.length) {
+      document.getElementById('sample-section').style.display = 'block';
+    } else {
+      document.getElementById('sample-section').style.display = 'none';
+    }
   } catch (error) {
     console.error('Sample Viewer Error:', error);
     const sampleContainer = document.getElementById('sample-section');
     sampleContainer.textContent = 'Unable to load sample records.';
+    document.getElementById('sample-section').style.display = 'block';
   }
 }
 
 async function inspectService(url) {
   try {
+    // 🔒 Hide all content sections initially
+    document.getElementById('layer-info').style.display = 'none';
+    document.getElementById('fields-info').style.display = 'none';
+    document.getElementById('sample-section').style.display = 'none';
+    document.getElementById('map-preview-section').style.display = 'none';
+    document.getElementById('layer-selector').innerHTML = '';
+
     const json = await fetchFeatureLayerMetadata(url);
-    const layerSelector = document.getElementById('layer-selector');
-    layerSelector.innerHTML = '';
 
     if (json.type === "Feature Layer" || json.type === "Table") {
       displayLayerInfo(json);
       displayFields(json.fields || []);
       handleSampleViewer(url);
-      updateMapPreview(url); 
+      updateMapPreview(url);
+
+      document.getElementById('layer-info').style.display = 'block';
+      document.getElementById('fields-info').style.display = 'block';
     }
     else if (json.layers && json.layers.length > 0) {
       const instruction = document.createElement('p');
       instruction.textContent = 'Select a layer to inspect:';
-      layerSelector.appendChild(instruction);
+      document.getElementById('layer-selector').appendChild(instruction);
 
       const pillContainer = document.createElement('div');
       pillContainer.className = 'pill-container';
@@ -133,12 +150,15 @@ async function inspectService(url) {
           displayLayerInfo(layerJson);
           displayFields(layerJson.fields || []);
           handleSampleViewer(selectedUrl);
-          updateMapPreview(selectedUrl); 
+          updateMapPreview(selectedUrl);
+
+          document.getElementById('layer-info').style.display = 'block';
+          document.getElementById('fields-info').style.display = 'block';
         };
         pillContainer.appendChild(pill);
       });
 
-      layerSelector.appendChild(pillContainer);
+      document.getElementById('layer-selector').appendChild(pillContainer);
     } else {
       alert('No feature layers found at this URL.');
     }
@@ -148,7 +168,6 @@ async function inspectService(url) {
   }
 }
 
-// ✅ Updated with fallback values and safe HTML rendering
 function displayLayerInfo(json) {
   document.getElementById('layer-name').textContent = json.name || 'Unnamed Layer';
   document.getElementById('layer-owner').textContent = json.owner || json.serviceItemOwner || 'Unknown owner';
@@ -169,6 +188,7 @@ function displayLayerInfo(json) {
 function displayFields(fields) {
   const table = document.getElementById('fields-table');
   table.innerHTML = '';
+
   const thead = document.createElement('thead');
   const headerRow = document.createElement('tr');
   ['Field', 'Alias', 'Type'].forEach(header => {
@@ -180,21 +200,27 @@ function displayFields(fields) {
   table.appendChild(thead);
 
   const tbody = document.createElement('tbody');
-  fields.slice(0, 10).forEach(field => {
+  fields.forEach(field => {
     const row = document.createElement('tr');
+
     const fieldName = document.createElement('td');
     fieldName.textContent = field.name;
+
     const fieldAlias = document.createElement('td');
     fieldAlias.textContent = field.alias || field.name;
+
     const fieldType = document.createElement('td');
     fieldType.textContent = field.type;
+
     row.appendChild(fieldName);
     row.appendChild(fieldAlias);
     row.appendChild(fieldType);
     tbody.appendChild(row);
   });
+
   table.appendChild(tbody);
 }
+
 
 document.getElementById('inspect-btn').addEventListener('click', () => {
   const url = document.getElementById('service-url').value.trim();
