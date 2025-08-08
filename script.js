@@ -60,7 +60,7 @@ function displaySampleTable(features) {
       const td = document.createElement('td');
       const cellValue = feature.attributes[header];
       td.textContent = cellValue;
-      td.title = cellValue ?? '';  // Show full text on hover
+      td.title = cellValue ?? '';
       row.appendChild(td);
     });
     tbody.appendChild(row);
@@ -68,6 +68,12 @@ function displaySampleTable(features) {
   table.appendChild(tbody);
   tableContainer.appendChild(table);
   sampleContainer.appendChild(tableContainer);
+}
+
+function updateMapPreview(serviceUrl) {
+  const mapFrame = document.getElementById('map-preview');
+  const viewerUrl = `https://www.arcgis.com/apps/mapviewer/index.html?url=${encodeURIComponent(serviceUrl)}&source=sd`;
+  mapFrame.src = viewerUrl;
 }
 
 function downloadCSV(features) {
@@ -103,13 +109,12 @@ async function inspectService(url) {
     const layerSelector = document.getElementById('layer-selector');
     layerSelector.innerHTML = '';
 
-    // Case: Single layer service (Feature Layer or Table)
     if (json.type === "Feature Layer" || json.type === "Table") {
       displayLayerInfo(json);
       displayFields(json.fields || []);
       handleSampleViewer(url);
+      updateMapPreview(url); 
     }
-    // Case: FeatureServer with multiple layers
     else if (json.layers && json.layers.length > 0) {
       const instruction = document.createElement('p');
       instruction.textContent = 'Select a layer to inspect:';
@@ -128,6 +133,7 @@ async function inspectService(url) {
           displayLayerInfo(layerJson);
           displayFields(layerJson.fields || []);
           handleSampleViewer(selectedUrl);
+          updateMapPreview(selectedUrl); 
         };
         pillContainer.appendChild(pill);
       });
@@ -142,12 +148,22 @@ async function inspectService(url) {
   }
 }
 
-
+// ✅ Updated with fallback values and safe HTML rendering
 function displayLayerInfo(json) {
-  document.getElementById('layer-name').textContent = json.name || '';
-  document.getElementById('layer-owner').textContent = json.owner || '';
-  document.getElementById('layer-updated').textContent = json.modified ? new Date(json.modified).toLocaleString() : '';
-  document.getElementById('layer-description').textContent = json.description || '';
+  document.getElementById('layer-name').textContent = json.name || 'Unnamed Layer';
+  document.getElementById('layer-owner').textContent = json.owner || json.serviceItemOwner || 'Unknown owner';
+
+  const lastModified = json.modified || (json.editingInfo && json.editingInfo.lastEditDate);
+  document.getElementById('layer-updated').textContent = lastModified
+    ? new Date(lastModified).toLocaleString()
+    : 'Unknown date';
+
+  const descElem = document.getElementById('layer-description');
+  if (json.description) {
+    descElem.innerHTML = json.description;
+  } else {
+    descElem.innerHTML = '<em>No description available.</em>';
+  }
 }
 
 function displayFields(fields) {
@@ -164,7 +180,7 @@ function displayFields(fields) {
   table.appendChild(thead);
 
   const tbody = document.createElement('tbody');
-  fields.forEach(field => {
+  fields.slice(0, 10).forEach(field => {
     const row = document.createElement('tr');
     const fieldName = document.createElement('td');
     fieldName.textContent = field.name;
