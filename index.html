@@ -12,18 +12,16 @@
       <h1>Feature Layer Inspector</h1>
       <p class="subtitle">Explore any public ArcGIS Feature Layer in seconds.</p>
       <p class="description">
-  This tool helps you <strong>quickly inspect</strong> any public-facing 
-  <strong>ArcGIS Feature Service or Layer URL</strong>. Just paste the link above 
-  and click <strong>Inspect</strong> to retrieve and display its key 
-  <strong>metadata</strong>, <strong>field schema</strong>, and 
-  <strong>sample records</strong>. Perfect for 
-  <strong>QA workflows</strong>, <strong>dashboard prep</strong>, or 
-  <strong>exploring unknown services</strong>. You can also download 
-  the <strong>schema</strong> and <strong>sample data</strong> as CSVs 
-  for quick analysis.
-</p>
-
-      
+        This tool helps you <strong>quickly inspect</strong> any public-facing 
+        <strong>ArcGIS Feature Service or Layer URL</strong>. Just paste the link above 
+        and click <strong>Inspect</strong> to retrieve and display its key 
+        <strong>metadata</strong>, <strong>field schema</strong>, and 
+        <strong>sample records</strong>. Perfect for 
+        <strong>QA workflows</strong>, <strong>dashboard prep</strong>, or 
+        <strong>exploring unknown services</strong>. You can also download 
+        the <strong>schema</strong> and <strong>sample data</strong> as CSVs 
+        for quick analysis.
+      </p>
     </header>
 
     <section class="input-group">
@@ -37,7 +35,7 @@
 
     <section id="layer-selector"></section>
 
-    <section id="layer-info">
+    <section id="layer-info" style="display: none;">
       <h2>Layer Summary</h2>
       <p><strong>Name:</strong> <span id="layer-name"></span></p>
       <p><strong>Owner:</strong> <span id="layer-owner"></span></p>
@@ -45,7 +43,7 @@
       <p><strong>Description:</strong> <span id="layer-description"></span></p>
     </section>
 
-    <section id="fields-info">
+    <section id="fields-info" style="display: none;">
       <div class="header-with-button">
         <h2>Field Schema</h2>
         <button id="download-schema" class="btn">Download Schema CSV</button>
@@ -55,19 +53,20 @@
       </div>
     </section>
 
-    <section id="sample-section"></section>
-    <section id="map-preview-section">
-        <h2>Map Preview</h2>
-        <iframe 
-            id="map-preview"
-            class="map-frame"
-            src=""
-            width="100%"
-            height="500"
-            frameborder="0"
-            style="border: 1px solid #ccc; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"
-        ></iframe>
-        </section>
+    <section id="sample-section" style="display: none;"></section>
+
+    <section id="map-preview-section" style="display: none;">
+      <h2>Map Preview</h2>
+      <iframe 
+        id="map-preview"
+        class="map-frame"
+        src=""
+        width="100%"
+        height="500"
+        frameborder="0"
+        style="border: 1px solid #ccc; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"
+      ></iframe>
+    </section>
   </main>
 
   <script src="script.js"></script>
