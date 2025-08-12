@@ -1,74 +1,160 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-theme="auto">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Feature Layer Inspector</title>
-  <link rel="stylesheet" href="style.css" />
+
+  <!-- Leaflet -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin="anonymous"
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin="anonymous"
+    defer
+  ></script>
+
+  <!-- Esri Leaflet -->
+  <script src="https://unpkg.com/esri-leaflet@3.0.12/dist/esri-leaflet.js" defer></script>
+
+  <!-- (Optional) ArcGIS geometry helpers -->
+  <script src="https://unpkg.com/@esri/arcgis-to-geojson-utils/dist/arcgis-to-geojson-utils.umd.js" defer></script>
+
+  <link rel="stylesheet" href="inspector.css" />
 </head>
 <body>
-  <main class="app-layout">
-    <header>
+  <!-- App Bar -->
+  <header class="appbar">
+    <div class="brand">
       <h1>Feature Layer Inspector</h1>
-      <p class="subtitle">Explore any public ArcGIS Feature Layer in seconds.</p>
-      <p class="description">
-        This tool helps you <strong>quickly inspect</strong> any public-facing 
-        <strong>ArcGIS Feature Service or Layer URL</strong>. Just paste the link above 
-        and click <strong>Inspect</strong> to retrieve and display its key 
-        <strong>metadata</strong>, <strong>field schema</strong>, and 
-        <strong>sample records</strong>. Perfect for 
-        <strong>QA workflows</strong>, <strong>dashboard prep</strong>, or 
-        <strong>exploring unknown services</strong>. You can also download 
-        the <strong>schema</strong> and <strong>sample data</strong> as CSVs 
-        for quick analysis.
+      <p class="intro">
+        Paste any public ArcGIS Feature <em>Service</em> or <em>Layer</em> URL to see a summary, the field schema,
+        sample records, and a live map preview. Defaults: <strong>all fields</strong>, <strong>geometry on</strong>,
+        first <strong>100</strong> records.
       </p>
-    </header>
+    </div>
 
-    <section class="input-group">
-      <input 
-        type="text" 
-        id="service-url" 
-        placeholder="Please enter your service link (e.g. https://services.arcgis.com/.../FeatureServer)" 
-      />
-      <button id="inspect-btn" class="btn">Inspect</button>
-    </section>
-
-    <section id="layer-selector"></section>
-
-    <section id="layer-info" style="display: none;">
-      <h2>Layer Summary</h2>
-      <p><strong>Name:</strong> <span id="layer-name"></span></p>
-      <p><strong>Owner:</strong> <span id="layer-owner"></span></p>
-      <p><strong>Last Modified:</strong> <span id="layer-updated"></span></p>
-      <p><strong>Description:</strong> <span id="layer-description"></span></p>
-    </section>
-
-    <section id="fields-info" style="display: none;">
-      <div class="header-with-button">
-        <h2>Field Schema</h2>
-        <button id="download-schema" class="btn">Download Schema CSV</button>
+    <div class="actions">
+      <div class="export-buttons">
+        <button id="exportSchemaCsv" class="btn subtle">Export Schema CSV</button>
+        <button id="exportSchemaJson" class="btn subtle">Export Schema JSON</button>
+        <button id="exportSamplesCsv" class="btn subtle">Export Samples CSV</button>
+        <button id="exportSamplesJson" class="btn subtle">Export Samples JSON</button>
       </div>
-      <div class="scrollable-table">
-        <table id="fields-table" class="info-table"></table>
+      <a
+        href="https://cmesserich-br.github.io/ago_dependency_checker_app/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn subtle"
+        id="openDependencyBtn"
+        title="Open the Dependency Explorer in a new tab"
+        >
+        Dependency Explorer ↗
+        </a>
+
+      <label class="theme">
+        Theme
+        <select id="themeSelect" aria-label="Theme">
+          <option value="auto">Auto</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <!-- Target Row -->
+  <section class="target card">
+    <div class="row">
+      <label class="field grow">
+        <span>Service or Layer URL</span>
+        <input id="urlInput" type="url" placeholder="https://.../FeatureServer or https://.../FeatureServer/0" />
+      </label>
+
+      <label class="field token">
+        <span>Auth token (optional)</span>
+        <input id="tokenInput" type="password" placeholder="Paste token if service is secured" />
+      </label>
+
+      <div class="buttons">
+        <button id="inspectBtn" class="btn primary">Inspect</button>
+        <button id="clearAllBtn" class="btn subtle">Clear</button>
       </div>
-    </section>
+    </div>
+    <div id="errorBar" class="error" hidden></div>
+  </section>
 
-    <section id="sample-section" style="display: none;"></section>
+  <!-- Layer Chips -->
+  <section class="chips">
+    <div id="layersRow" class="chip-row" aria-live="polite"></div>
+  </section>
 
-    <section id="map-preview-section" style="display: none;">
-      <h2>Map Preview</h2>
-      <iframe 
-        id="map-preview"
-        class="map-frame"
-        src=""
-        width="100%"
-        height="500"
-        frameborder="0"
-        style="border: 1px solid #ccc; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"
-      ></iframe>
-    </section>
-  </main>
+  <!-- Layer Summary -->
+<section class="card">
+  <div class="section-head">
+    <h2 class="card-title">Layer Summary</h2>
+  </div>
+  <div id="summary" class="summary-grid card-body">
+    <div><span class="k">Name</span><span id="sName" class="v">—</span></div>
+    <div><span class="k">Type</span><span id="sType" class="v">—</span></div>
+    <div><span class="k">Owner</span><span id="sOwner" class="v">—</span></div>
+    <div><span class="k">Last Modified</span><span id="sUpdated" class="v">—</span></div>
+    <div class="full"><span class="k">Description</span><span id="sDesc" class="v">—</span></div>
+  </div>
+</section>
 
-  <script src="script.js"></script>
+
+  <!-- Field Schema -->
+  <section class="card">
+    <div class="section-head">
+      <h2 class="card-title">Field Schema</h2>
+      <small id="schemaCount" class="muted">—</small>
+    </div>
+    <div class="schema-wrap card-body">
+      <table id="schemaTable" class="table">
+        <thead>
+          <tr><th>Field</th><th>Alias</th><th>Type</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Data & Map -->
+  <section class="card">
+    <div class="section-head">
+      <h2 class="card-title">Data & Map</h2>
+      <small class="muted">Defaults: 1=1, all fields, geometry on, first 100 records.</small>
+    </div>
+
+    <div class="card-body data-map">
+      <!-- Table -->
+      <div class="data-table-wrap">
+        <table id="samplesTable" class="table">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- Map -->
+      <div class="map-wrap">
+        <div id="map" aria-label="Map preview"></div>
+        <div class="map-actions">
+          <button id="fitMapBtn" class="btn subtle">Fit Map</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footnote">
+    Local prototype • No credentials stored • Tokens remain in memory while the page is open
+  </footer>
+
+  <script src="inspector.js" defer></script>
 </body>
 </html>
